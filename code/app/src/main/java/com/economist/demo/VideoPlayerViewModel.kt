@@ -2,10 +2,15 @@ package com.economist.demo
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ClippingMediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +34,7 @@ class VideoPlayerViewModel : ViewModel() {
     private val _isPlaying = MutableStateFlow(true)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
+    private val previewDurationMillis = 5_000L // configurable preview duration, e.g., 5 seconds
 
     private var progressJob: Job? = null
 
@@ -62,12 +68,28 @@ class VideoPlayerViewModel : ViewModel() {
         }
     }
 
-    private fun setUpExoPlayer(context: Context, videoUri: Uri) = ExoPlayer.Builder(context).build().apply {
-        setMediaItem(MediaItem.fromUri(videoUri))
-        prepare()
-        seekTo(0)
-        playWhenReady = true
+    @OptIn(UnstableApi::class)
+    private fun setUpExoPlayer(context: Context, videoUri: Uri): ExoPlayer {
+        val mediaItem = MediaItem.fromUri(videoUri)
+
+        val dataSourceFactory = DefaultDataSource.Factory(context)
+        val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(mediaItem)
+
+        val clippingSource = ClippingMediaSource(
+            mediaSource,
+            0L,
+            previewDurationMillis * 1_000
+        )
+
+        return ExoPlayer.Builder(context).build().apply {
+            setMediaSource(clippingSource)
+            prepare()
+            seekTo(0)
+            playWhenReady = true
+        }
     }
+
 
     private fun releasePlayer() {
         progressJob?.cancel()
