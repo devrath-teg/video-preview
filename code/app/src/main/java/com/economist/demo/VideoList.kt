@@ -1,16 +1,22 @@
 package com.economist.demo
 
-import android.net.Uri
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -19,19 +25,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun VideoList(
     viewModel: VideoPlayerViewModel
 ) {
-
     val listState = rememberLazyListState()
+    val context = LocalContext.current
     val videoList = viewModel.videoUris
 
-    // Retrieve the focused index
     val focusedIndex by remember {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
@@ -62,12 +67,34 @@ fun VideoList(
                 contentAlignment = Alignment.Center
             ) {
                 if (isFocused) {
-                    VideoPlayer(videoUri = uri, viewModel = viewModel)
+                    Box {
+                        VideoPlayer(videoUri = uri, viewModel = viewModel)
+
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(context, VideoPlayerFullScreenActivity::class.java)
+                                intent.putExtra("video_uri", uri.toString())
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
+                                .size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ExitToApp,
+                                contentDescription = "Fullscreen",
+                                tint = Color.White
+                            )
+                        }
+                    }
                 } else {
                     Image(
                         painter = painterResource(id = R.drawable.ic_video_thumbnail),
                         contentDescription = null,
-                        modifier = Modifier.width(150.dp).height(150.dp),
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(150.dp),
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -75,6 +102,7 @@ fun VideoList(
         }
     }
 }
+
 
 
 
