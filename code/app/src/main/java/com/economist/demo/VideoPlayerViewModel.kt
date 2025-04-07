@@ -22,6 +22,14 @@ class VideoPlayerViewModel : ViewModel() {
     private val _duration = MutableStateFlow(1L) // Avoid division by 0
     val duration: StateFlow<Long> = _duration
 
+
+    private val _isMuted = MutableStateFlow(true)
+    val isMuted: StateFlow<Boolean> = _isMuted
+
+    private val _isPlaying = MutableStateFlow(true)
+    val isPlaying: StateFlow<Boolean> = _isPlaying
+
+
     private var progressJob: Job? = null
 
     val videoUris = listOf(
@@ -39,6 +47,9 @@ class VideoPlayerViewModel : ViewModel() {
 
         val exoPlayer = setUpExoPlayer(context, videoUri)
         _player.value = exoPlayer
+
+        exoPlayer.volume = if (_isMuted.value) 0f else 1f
+        exoPlayer.playWhenReady = _isPlaying.value
 
         _duration.value = exoPlayer.duration.takeIf { it > 0 } ?: 1L
 
@@ -66,6 +77,18 @@ class VideoPlayerViewModel : ViewModel() {
         _currentPosition.value = 0L
         _duration.value = 1L
     }
+
+
+    fun toggleMute() {
+        _isMuted.value = !_isMuted.value
+        _player.value?.volume = if (_isMuted.value) 0f else 1f
+    }
+
+    fun togglePlayPause() {
+        _isPlaying.value = !_isPlaying.value
+        _player.value?.playWhenReady = _isPlaying.value
+    }
+
 
     override fun onCleared() {
         super.onCleared()
