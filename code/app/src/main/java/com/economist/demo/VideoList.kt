@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import com.economist.demo.pip.VideoPlayerFullScreenActivity
 
 @Composable
 fun VideoList(
