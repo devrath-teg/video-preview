@@ -16,10 +16,9 @@
         <!--android:theme="@style/Theme.Video"-->
 
         <activity
-            android:name=".pip.VideoPlayerFullScreenActivity"
+            android:name=".pip.BaseScreenActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:supportsPictureInPicture="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             >
             <intent-filter>
@@ -31,6 +30,10 @@
 
         <activity android:name=".MainActivity"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar.FullScreen"/>
+
+        <activity android:name=".pip.VideoPlayerFullScreenActivity"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
     </application>
 

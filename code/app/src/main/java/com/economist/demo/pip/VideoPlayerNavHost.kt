@@ -17,7 +17,7 @@ fun VideoPlayerNavHost(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "launch"
+        startDestination = "player"
     ) {
         composable("launch") {
             LaunchScreen(onStartClicked = {
