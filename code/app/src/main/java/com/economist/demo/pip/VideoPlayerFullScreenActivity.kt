@@ -10,6 +10,7 @@ import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,16 +53,22 @@ import com.economist.demo.R
 import androidx.core.net.toUri
 
 @androidx.annotation.OptIn(UnstableApi::class)
-class VideoPlayerFullScreenActivity : ComponentActivity() {
+class VideoPlayerFullScreenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setOrientation()
-        setContent { SetContentForScreen() }
+        //setContent { SetContentForScreen() }
+        setContentView(R.layout.activity_main) // Must include a container
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, VideoPlayerFragment())
+                .commit()
+        }
     }
 
-    private fun setOrientation() {
+    fun setOrientation() {
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         if (isLandscape) {
@@ -82,118 +89,8 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    private fun SetContentForScreen() {
-        val viewModel: VideoPlayerPipViewModel = viewModel()
-        val uri = viewModel.videoUrl.toUri()
-        val isInPipMode = remember { mutableStateOf(false) }
-        val lifecycleOwner = LocalLifecycleOwner.current
-        val configuration = LocalConfiguration.current
 
-        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val screenHeight = configuration.screenHeightDp.dp
-
-        DisposableEffect(Unit) {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) {
-                    isInPipMode.value = this@VideoPlayerFullScreenActivity.isInPictureInPictureMode
-                }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-        }
-
-        if (isLandscape) {
-            // Fullscreen video in landscape
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-            ) {
-                PipVideoPlayer(
-                    videoUri = uri,
-                    viewModel = viewModel,
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                IconButton(
-                    onClick = {
-                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(
-                            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                            end = 8.dp
-                        )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_fullscreen_exit), // Add this icon in drawable
-                        contentDescription = "Exit Fullscreen",
-                        tint = Color.White
-                    )
-                }
-            }
-        } else {
-            // Portrait: video on top 1/3rd of screen
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(screenHeight / 3)
-                ) {
-                    PipVideoPlayer(
-                        videoUri = uri,
-                        viewModel = viewModel,
-                        modifier = Modifier.matchParentSize()
-                    )
-
-                    if (!isInPipMode.value) {
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(
-                                    top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                                    end = 8.dp
-                                )
-                        ) {
-                            IconButton(
-                                onClick = { enterPipMode() },
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_picture_in_picture),
-                                    contentDescription = "Enter PiP",
-                                    tint = Color.White
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(4.dp))
-
-                            IconButton(
-                                onClick = {
-                                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                                }
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_full_screen),
-                                    contentDescription = "Enter Fullscreen",
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    private fun enterPipMode() {
+    fun enterPipMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val aspectRatio = Rational(16, 9)
             val pipParams = PictureInPictureParams.Builder()
