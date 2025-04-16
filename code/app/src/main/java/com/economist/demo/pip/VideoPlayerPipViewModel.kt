@@ -35,10 +35,12 @@ class VideoPlayerPipViewModel : ViewModel() {
 
     private var progressJob: Job? = null
 
+    private var isInitialized = false
+
     val videoUrl = "https://bestvpn.org/html5demos/assets/dizzy.mp4"
 
     fun playNewVideo(context: Context, videoUri: Uri) {
-        releasePlayer()
+        if (isInitialized) return // already initialized — don't re-init again
 
         val exoPlayer = setUpExoPlayer(context, videoUri)
         _player.value = exoPlayer
@@ -55,6 +57,8 @@ class VideoPlayerPipViewModel : ViewModel() {
                 delay(500L)
             }
         }
+
+        isInitialized = true
     }
 
     @OptIn(UnstableApi::class)
