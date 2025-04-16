@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import com.economist.demo.R
+import androidx.core.net.toUri
 
 @androidx.annotation.OptIn(UnstableApi::class)
 class VideoPlayerFullScreenActivity : ComponentActivity() {
@@ -84,7 +85,7 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
     @Composable
     private fun SetContentForScreen() {
         val viewModel: VideoPlayerPipViewModel = viewModel()
-        val uri = Uri.parse(viewModel.videoUrl)
+        val uri = viewModel.videoUrl.toUri()
         val isInPipMode = remember { mutableStateOf(false) }
         val lifecycleOwner = LocalLifecycleOwner.current
         val configuration = LocalConfiguration.current
@@ -117,7 +118,7 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
 
                 IconButton(
                     onClick = {
-                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                     },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
