@@ -45,9 +45,7 @@ fun PipVideoPlayer(
                         useController = false
                     }
                 },
-                update = {
-                    it.setPlayer(exoPlayer)
-                },
+                update = { it.setPlayer(exoPlayer) },
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -85,6 +83,8 @@ fun PipVideoPlayer(
         }
     }
 }
+
+
 
 
 
