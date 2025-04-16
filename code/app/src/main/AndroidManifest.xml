@@ -28,9 +28,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar.FullScreen"/>
-
         <activity android:name=".pip.VideoPlayerFullScreenActivity"
             android:supportsPictureInPicture="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
