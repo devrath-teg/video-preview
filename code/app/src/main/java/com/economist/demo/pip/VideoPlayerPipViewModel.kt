@@ -98,6 +98,12 @@ class VideoPlayerPipViewModel : ViewModel() {
         _player.value?.playWhenReady = _isPlaying.value
     }
 
+    fun restartVideo() {
+        _player.value?.seekTo(0)
+        _player.value?.playWhenReady = true
+        _isPlaying.value = true
+    }
+
 
     override fun onCleared() {
         super.onCleared()
@@ -107,4 +113,6 @@ class VideoPlayerPipViewModel : ViewModel() {
     fun release() {
         releasePlayer()
     }
+
+
 }

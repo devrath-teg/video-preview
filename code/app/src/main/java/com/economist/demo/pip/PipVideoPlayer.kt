@@ -105,6 +105,14 @@ fun PipVideoPlayer(
                                 tint = Color.White
                             )
                         }
+
+                        IconButton(onClick = { viewModel.restartVideo() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_restart),
+                                contentDescription = "Restart Video",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
 
