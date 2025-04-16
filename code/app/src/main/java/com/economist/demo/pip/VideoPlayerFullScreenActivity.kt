@@ -1,6 +1,7 @@
 package com.economist.demo.pip
 
 import android.app.PictureInPictureParams
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
@@ -13,6 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -36,6 +40,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -49,7 +56,29 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        setOrientation()
         setContent { SetContentForScreen() }
+    }
+
+    private fun setOrientation() {
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        if (isLandscape) {
+            // Hide status bar and navigation bar
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowInsetsControllerCompat(window, window.decorView).apply {
+                hide(WindowInsetsCompat.Type.systemBars())
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            // Optional: Restore system bars in portrait mode
+            WindowCompat.setDecorFitsSystemWindows(window, true)
+            WindowInsetsControllerCompat(
+                window,
+                window.decorView
+            ).show(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     @Composable
@@ -85,6 +114,24 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
                     viewModel = viewModel,
                     modifier = Modifier.fillMaxSize()
                 )
+
+                IconButton(
+                    onClick = {
+                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(
+                            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                            end = 8.dp
+                        )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_fullscreen_exit), // Add this icon in drawable
+                        contentDescription = "Exit Fullscreen",
+                        tint = Color.White
+                    )
+                }
             }
         } else {
             // Portrait: video on top 1/3rd of screen
@@ -106,8 +153,7 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
                     )
 
                     if (!isInPipMode.value) {
-                        IconButton(
-                            onClick = { enterPipMode() },
+                        Row(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(
@@ -115,17 +161,36 @@ class VideoPlayerFullScreenActivity : ComponentActivity() {
                                     end = 8.dp
                                 )
                         ) {
-                            Icon(
-                                painterResource(id = R.drawable.ic_picture_in_picture),
-                                contentDescription = "Enter PiP",
-                                tint = Color.White
-                            )
+                            IconButton(
+                                onClick = { enterPipMode() },
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_picture_in_picture),
+                                    contentDescription = "Enter PiP",
+                                    tint = Color.White
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            IconButton(
+                                onClick = {
+                                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_full_screen),
+                                    contentDescription = "Enter Fullscreen",
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
+
 
     private fun enterPipMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
